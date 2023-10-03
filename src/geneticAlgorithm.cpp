@@ -8,7 +8,7 @@ std::vector<Nodo*> orderedCrossover(const std::vector<Nodo*>& padre1, const std:
     // Generar dos puntos de corte aleatorios
     int puntoCorte1 = rand() % tamano;
     int puntoCorte2 = rand() % tamano;
-
+    //printf("Corte en: %d,%d", puntoCorte1, puntoCorte2);
     // Asegurarse de que los puntos de corte sean diferentes
     while (puntoCorte1 == puntoCorte2) {
         puntoCorte2 = rand() % tamano;
@@ -18,7 +18,7 @@ std::vector<Nodo*> orderedCrossover(const std::vector<Nodo*>& padre1, const std:
     if (puntoCorte1 > puntoCorte2) {
         std::swap(puntoCorte1, puntoCorte2);
     }
-
+    
     // Copiar los elementos entre los puntos de corte del padre1 al hijo
     for (int i = puntoCorte1; i <= puntoCorte2; ++i) {
         hijo[i] = new Nodo(padre1[i]->coordenadas.first, padre1[i]->coordenadas.second);
@@ -70,15 +70,27 @@ void AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
         // Calcular la aptitud de cada individuo
         std::vector<std::pair<int, double>> aptitudes; // Parejas (índice de individuo, valor de aptitud)
         double sumaDistancias = 0.0;
+        int mejorIndividuoIdx = -1; // Índice del mejor individuo de esta generación
+        double mejorDistancia = std::numeric_limits<double>::max(); // Inicializar con un valor grande
 
         for (int i = 0; i < individuos; ++i) {
             int distancia = calcularDistanciaTotal(poblacion[i]);
             aptitudes.push_back(std::make_pair(i, distancia));
             sumaDistancias += distancia;
+
+            // Actualizar el mejor individuo de esta generación si es necesario
+            if (distancia < mejorDistancia) {
+                mejorDistancia = distancia;
+                mejorIndividuoIdx = i;
+            }
         }
 
-        // Calcular la media de las distancias
+        // Calcular el promedio de las distancias de esta generación
         double mediaDistancias = sumaDistancias / individuos;
+
+        // Imprimir el promedio y el mejor individuo de esta generación
+        std::cout << "Generación " << generacion << ": Promedio=" << mediaDistancias
+                  << ", Mejor distancia=" << mejorDistancia << std::endl;
 
         // Seleccionar individuos para la siguiente generación mediante selección por ranking
         std::vector<std::vector<Nodo*>> nuevaGeneracion;
