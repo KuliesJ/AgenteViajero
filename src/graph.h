@@ -8,9 +8,7 @@
 
 class Nodo {
 public:
-    char etiqueta;
     std::pair<int, int> coordenadas;
-
     Nodo(int x, int y);
 };
 

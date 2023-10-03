@@ -18,3 +18,5 @@ public:
     int calcularDistanciaTotal(const std::vector<Nodo*>& ruta);
     void ejecutarAlgoritmoGenetico();
 };
+
+std::vector<Nodo*> orderedCrossover(const std::vector<Nodo*>& padre1, const std::vector<Nodo*>& padre2);
