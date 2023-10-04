@@ -11,7 +11,7 @@ int main() {
         grafo.agregarNodo(ptrNodo);
     }
 
-    int individuos = 20;
+    int individuos = 4;
     int generaciones = 100;
     
     AlgoritmoGenetico algoritmoGenetico(individuos, generaciones, &grafo);

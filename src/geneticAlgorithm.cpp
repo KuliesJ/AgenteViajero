@@ -1,29 +1,16 @@
 #include "geneticAlgorithm.h"
 
-// Función para realizar Ordered Crossover
 std::vector<Nodo*> orderedCrossover(const std::vector<Nodo*>& padre1, const std::vector<Nodo*>& padre2) {
     int tamano = padre1.size();
     std::vector<Nodo*> hijo(tamano, nullptr);
-
-    // Generar dos puntos de corte aleatorios
-    int puntoCorte1 = rand() % tamano;
-    int puntoCorte2 = rand() % tamano;
-    //printf("Corte en: %d,%d", puntoCorte1, puntoCorte2);
-    // Asegurarse de que los puntos de corte sean diferentes
-    while (puntoCorte1 == puntoCorte2) {
-        puntoCorte2 = rand() % tamano;
-    }
-
-    // Asegurarse de que el punto de corte 1 sea menor que el punto de corte 2
-    if (puntoCorte1 > puntoCorte2) {
-        std::swap(puntoCorte1, puntoCorte2);
-    }
+    // Generar un punto de corte aleatorio
+    int puntoCorte = rand() % tamano;
     
-    // Copiar los elementos entre los puntos de corte del padre1 al hijo
-    for (int i = puntoCorte1; i <= puntoCorte2; ++i) {
+    // Copiar los elementos antes del punto de corte del padre1 al hijo
+    for (int i = 0; i <= puntoCorte; ++i) {
         hijo[i] = new Nodo(padre1[i]->coordenadas.first, padre1[i]->coordenadas.second);
     }
-
+    
     // Rellenar el resto de los elementos del hijo con los elementos del padre2
     int padre2Index = 0;
     for (int i = 0; i < tamano; ++i) {
@@ -35,7 +22,7 @@ std::vector<Nodo*> orderedCrossover(const std::vector<Nodo*>& padre1, const std:
             padre2Index++;
         }
     }
-
+    
     return hijo;
 }
 
@@ -66,31 +53,24 @@ int AlgoritmoGenetico::calcularDistanciaTotal(const std::vector<Nodo*>& ruta) {
 }
 
 void AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
-    for (int generacion = 0; generacion < generaciones; ++generacion) {
+    for(int generacion = 0; generacion < generaciones; generacion++){
+        printf("%d", generacion);
+        std::vector<Nodo*> NuevaGeneracion;
         // Calcular la aptitud de cada individuo
         std::vector<std::pair<int, double>> aptitudes; // Parejas (índice de individuo, valor de aptitud)
         double sumaDistancias = 0.0;
-        int mejorIndividuoIdx = -1; // Índice del mejor individuo de esta generación
-        double mejorDistancia = std::numeric_limits<double>::max(); // Inicializar con un valor grande
 
         for (int i = 0; i < individuos; ++i) {
             int distancia = calcularDistanciaTotal(poblacion[i]);
             aptitudes.push_back(std::make_pair(i, distancia));
             sumaDistancias += distancia;
-
-            // Actualizar el mejor individuo de esta generación si es necesario
-            if (distancia < mejorDistancia) {
-                mejorDistancia = distancia;
-                mejorIndividuoIdx = i;
-            }
         }
 
         // Calcular el promedio de las distancias de esta generación
         double mediaDistancias = sumaDistancias / individuos;
 
-        // Imprimir el promedio y el mejor individuo de esta generación
-        std::cout << "Generación " << generacion << ": Promedio=" << mediaDistancias
-                  << ", Mejor distancia=" << mejorDistancia << std::endl;
+        // Imprimir el promedio de distancias de esta generación
+        std::cout << std::endl << "Promedio de distancias en la generación " << generacion << ": " << mediaDistancias << std::endl;
 
         // Seleccionar individuos para la siguiente generación mediante selección por ranking
         std::vector<std::vector<Nodo*>> nuevaGeneracion;
@@ -105,16 +85,17 @@ void AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
 
             for (int j = 0; j < copias; ++j) {
                 nuevaGeneracion.push_back(poblacion[aptitudes[i].first]); // Agregar copias de los individuos
+                std::cout << "Distancia de agregado: " << aptitudes[i].second << std::endl;
             }
         }
-
         // Realizar crossover ordenado entre parejas de individuos
         std::vector<std::vector<Nodo*>> descendencia;
 
         for (int i = 0; i < individuos - 1; i += 2) {
+            //El error está aqui abajo
             std::vector<Nodo*> hijo1 = orderedCrossover(nuevaGeneracion[i], nuevaGeneracion[i + 1]);
             std::vector<Nodo*> hijo2 = orderedCrossover(nuevaGeneracion[i + 1], nuevaGeneracion[i]);
-
+            //No tan abajo
             descendencia.push_back(hijo1);
             descendencia.push_back(hijo2);
         }
