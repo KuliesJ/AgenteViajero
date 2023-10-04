@@ -19,5 +19,5 @@ int main() {
     std::vector<Nodo*> nodos; // Rellenar con los nodos necesarios
     algoritmoGenetico.inicializarPoblacion(grafo.nodos);
     // Ejecutar el algoritmo genético
-    algoritmoGenetico.ejecutarAlgoritmoGenetico();
+    std::vector<std::vector<Nodo*>> resultados = algoritmoGenetico.ejecutarAlgoritmoGenetico();
 }

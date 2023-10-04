@@ -57,7 +57,8 @@ double AlgoritmoGenetico::calcularDistanciaTotal(const std::vector<Nodo*>& ruta)
     return distanciaTotal;
 }
 
-void AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
+std::vector<std::vector<Nodo*>> AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
+    std::vector<std::vector<Nodo*>> mejoresIndividuos;
     for (int generacion = 0; generacion < generaciones; ++generacion) {
         // Calcular la aptitud de cada individuo
         std::vector<std::pair<int, double>> aptitudes; // Parejas (índice de individuo, valor de aptitud)
@@ -85,6 +86,7 @@ void AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
         });
 
         int individuosFaltantes = individuos - nuevaGeneracion.size();
+        mejoresIndividuos.push_back(poblacion[aptitudes[0].first]);
 
         for (int i = 0; i < individuosFaltantes; ++i) {
             double valorEsperado = aptitudes[i].second / mediaDistancias;
@@ -119,4 +121,5 @@ void AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
         // Reemplazar la población actual con la nueva generación y aplicar mutación si es necesario
         poblacion = descendencia;
     }
+    return mejoresIndividuos;
 }

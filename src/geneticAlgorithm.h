@@ -16,7 +16,7 @@ public:
     AlgoritmoGenetico(int individuos, int generaciones, Grafo* grafo);
     void inicializarPoblacion(const std::vector<Nodo*>& nodos);
     double calcularDistanciaTotal(const std::vector<Nodo*>& ruta);
-    void ejecutarAlgoritmoGenetico();
+    std::vector<std::vector<Nodo*>> ejecutarAlgoritmoGenetico();
 };
 
 std::vector<Nodo*> orderedCrossover(const std::vector<Nodo*>& padre1, const std::vector<Nodo*>& padre2);
