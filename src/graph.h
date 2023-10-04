@@ -22,7 +22,6 @@ public:
     std::vector<Nodo*> nodos;  // Cambiamos a un vector de punteros a Nodo
 
     void agregarNodo(Nodo* nuevoNodo);  // Ahora recibe un puntero a Nodo
-
     double calcularDistancia(const Nodo& nodoA, const Nodo& nodoB);
 
 private:

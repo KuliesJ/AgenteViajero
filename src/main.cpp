@@ -12,7 +12,7 @@ int main() {
     }
 
     int individuos = 4;
-    int generaciones = 100;
+    int generaciones = 10;
     
     AlgoritmoGenetico algoritmoGenetico(individuos, generaciones, &grafo);
     // Inicializar la población inicial
@@ -20,4 +20,7 @@ int main() {
     algoritmoGenetico.inicializarPoblacion(grafo.nodos);
     // Ejecutar el algoritmo genético
     std::vector<std::vector<Nodo*>> resultados = algoritmoGenetico.ejecutarAlgoritmoGenetico();
+    OpenGLRenderer renderer(resultados);
+    renderer.initialize();
+    renderer.run();
 }
