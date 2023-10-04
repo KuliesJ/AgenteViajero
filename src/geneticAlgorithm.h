@@ -4,7 +4,7 @@
 #include <random>
 #include <ctime>
 #include "graph.h" // Asegúrate de incluir el archivo que contiene las clases Nodo y Grafo
-
+#include <unordered_set>
 class AlgoritmoGenetico {
 private:
     int individuos;
@@ -15,7 +15,7 @@ private:
 public:
     AlgoritmoGenetico(int individuos, int generaciones, Grafo* grafo);
     void inicializarPoblacion(const std::vector<Nodo*>& nodos);
-    int calcularDistanciaTotal(const std::vector<Nodo*>& ruta);
+    double calcularDistanciaTotal(const std::vector<Nodo*>& ruta);
     void ejecutarAlgoritmoGenetico();
 };
 
