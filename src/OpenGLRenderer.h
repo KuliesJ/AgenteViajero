@@ -13,15 +13,16 @@ private:
     std::vector<std::vector<Nodo*>> caminos;
 
 public:
-    OpenGLRenderer(std::vector<std::vector<Nodo*>> m, float screenWidth = 800.0f, float screenHeight = 800.0f);
+    OpenGLRenderer(std::vector<std::vector<Nodo*>> m, float screenWidth = 500.0f, float screenHeight = 500.0f);
     ~OpenGLRenderer();
 
     void initialize();
     void run();
 
 private:
-    void dibujarNodo(const Nodo* nodo);
+    void dibujarNodos(const std::vector<Nodo*>& nodos);
     void dibujarCamino(const std::vector<Nodo*>& camino);
+    void drawPoints();
 };
 
 #endif // OPENGL_RENDERER_H

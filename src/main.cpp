@@ -6,21 +6,35 @@
 int main() {
     Grafo grafo;
     Nodo* ptrNodo;
-    for(int i = 0; i<10; i++){
-        ptrNodo = new Nodo(i,i+3);
-        grafo.agregarNodo(ptrNodo);
+    int datos[3];
+    //[0]Numero de ciudades
+    //[1]Numero de individuos
+    //[2]NUmero de generaciones
+    std::cout << "Ingresar número de: ciudades individuos y generaciones"<<std::endl;
+    for(int i=0; i<3; i++){
+        std::cin>>datos[i];
     }
-
-    int individuos = 4;
-    int generaciones = 10;
     
-    AlgoritmoGenetico algoritmoGenetico(individuos, generaciones, &grafo);
-    // Inicializar la población inicial
-    std::vector<Nodo*> nodos; // Rellenar con los nodos necesarios
+    // Inicializa la semilla de rand() con la hora actual
+    srand(static_cast<unsigned>(time(nullptr)));
+    // Genera puntos en el mapa
+    for(int i=0;i<datos[0];i++){
+        int xAleatorio = 1 + rand() % 198;
+        int yAleatorio = 1 + rand() % 198;
+        xAleatorio -= 99; yAleatorio -= 99;
+        ptrNodo = new Nodo(xAleatorio, yAleatorio);
+        grafo.agregarNodo(ptrNodo);
+        printf("Coords %d: (%d,%d)\n", i, xAleatorio, yAleatorio);
+    };
+
+    AlgoritmoGenetico algoritmoGenetico(datos[1], datos[2], &grafo);
     algoritmoGenetico.inicializarPoblacion(grafo.nodos);
+    
     // Ejecutar el algoritmo genético
     std::vector<std::vector<Nodo*>> resultados = algoritmoGenetico.ejecutarAlgoritmoGenetico();
+    
     OpenGLRenderer renderer(resultados);
     renderer.initialize();
     renderer.run();
+    
 }

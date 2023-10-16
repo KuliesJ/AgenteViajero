@@ -15,7 +15,6 @@ private:
 public:
     AlgoritmoGenetico(int individuos, int generaciones, Grafo* grafo);
     void inicializarPoblacion(const std::vector<Nodo*>& nodos);
-    double calcularDistanciaTotal(const std::vector<Nodo*>& ruta);
     std::vector<std::vector<Nodo*>> ejecutarAlgoritmoGenetico();
 };
 

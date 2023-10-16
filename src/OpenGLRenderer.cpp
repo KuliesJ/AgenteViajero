@@ -31,52 +31,84 @@ void OpenGLRenderer::initialize() {
     glfwMakeContextCurrent(window);
 }
 
-void OpenGLRenderer::dibujarNodo(const Nodo* nodo) {
-    // Configura el color y el tamaño del nodo
-    glColor3f(1.0f, 0.0f, 0.0f); // Color rojo
-    glPointSize(20.0f); // Tamaño del punto
-
-    glBegin(GL_POINTS);
-    glVertex2f(nodo->coordenadas.first, nodo->coordenadas.second); // Dibuja el nodo como un punto
-    glEnd();
-}
-
-
 void OpenGLRenderer::dibujarCamino(const std::vector<Nodo*>& camino) {
-    // Configura el color del camino
-    glColor3f(0.0f, 0.0f, 1.0f); // Color azul
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glColor3f(0.0f, 0.0f, 1.0f); // Color azul para el camino
 
-    glBegin(GL_LINE_STRIP); // Dibuja el camino como una serie de segmentos de línea
-    for (const Nodo* nodo : camino) {
-        glVertex2f(nodo->coordenadas.first, nodo->coordenadas.second); // Dibuja una línea al siguiente nodo en el camino
+    // Dibuja el camino como líneas entre nodos consecutivos
+    glBegin(GL_LINES);
+    for (size_t i = 0; i < camino.size() - 1; i++) {
+        glVertex2f(camino[i]->coordenadas.first, camino[i]->coordenadas.second);
+        glVertex2f(camino[i + 1]->coordenadas.first, camino[i + 1]->coordenadas.second);
     }
     glEnd();
 }
+
+void OpenGLRenderer::dibujarNodos(const std::vector<Nodo*>& nodos) {
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glColor3f(1.0f, 0.0f, 0.0f); // Color rojo para los nodos
+
+    // Dibuja cada nodo como un punto
+    glBegin(GL_POINTS);
+    for (const Nodo* nodo : nodos) {
+        glVertex2f(nodo->coordenadas.first, nodo->coordenadas.second);
+    }
+    glEnd();
+}
+#include <unistd.h>
 
 void OpenGLRenderer::run() {
+    // Configura la cámara y otras inicializaciones
+    printf("Generaciones a dibujar: %d\n", caminos.size());
+    int generacionActual = 0;
+
     while (!glfwWindowShouldClose(window)) {
-        // Configura el color y el tamaño del nodo
-        glColor3f(1.0f, 0.0f, 0.0f); // Color rojo
-        glPointSize(20.0f); // Tamaño del punto
+        // Limpia el búfer de pantalla
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glBegin(GL_POINTS);
-        glVertex2f(0.2, 0.2); // Dibuja el nodo como un punto
-        glEnd();
-        /*// Dibuja los nodos
-        for (const auto& camino : caminos) {
-            for (const Nodo* nodo : camino) {
-                dibujarNodo(nodo);
-            }
+        // Dibuja el camino y los nodos de la generación actual
+        if (generacionActual < caminos.size()) {
+            //dibujarCamino(caminos[generacionActual]);
+            //dibujarNodos(caminos[generacionActual]);
+            drawPoints();
+            sleep(1);
         }
-
-        // Dibuja los caminos
-        for (const auto& camino : caminos) {
-            dibujarCamino(camino);
-        }
-        int wait = 0;
-        std::cin >> wait;*/
+        
+        // Intercambia los buffers (doble búfer)
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        // Avanza a la siguiente generación (si corresponde)
+        generacionActual++;
+        
+        // Puedes agregar una pausa o control de velocidad aquí si es necesario
+        // Ejemplo: usleep(100000); // Pausa de 100 milisegundos
     }
+}
+
+void OpenGLRenderer::drawPoints() {
+    // Dibuja un punto en el centro y uno en cada esquina de la ventana
+    glColor3f(1.0f, 1.0f, 1.0f); // Color blanco
+
+    glPointSize(5.0f); // Tamaño del punto
+
+    glBegin(GL_POINTS);
+
+    // Punto en el centro (ajustado al centro de la ventana)
+    glVertex2f(screenWidth / 2, screenHeight / 2);
+
+    // Puntos en las esquinas (ajustados a las esquinas de la ventana)
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(0.5f, 0.5f);
+    glVertex2f(0.8f, 0.8f);
+    glVertex2f(0.9f, 0.9f);
+    glVertex2f(1.0f, 1.0f);
+    glVertex2f(screenWidth, 0.0f);
+    glVertex2f(0.0f, screenHeight);
+    glVertex2f(screenWidth, screenHeight);
+
+    glEnd();
 }
 

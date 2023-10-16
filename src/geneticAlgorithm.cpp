@@ -1,32 +1,35 @@
 #include "geneticAlgorithm.h"
 
 std::vector<Nodo*> orderedCrossover(const std::vector<Nodo*>& padre1, const std::vector<Nodo*>& padre2) {
-    int tamano = padre1.size();
-    std::vector<Nodo*> hijo(tamano, nullptr);
-    
-    // Generar un punto de corte aleatorio
-    int puntoCorte = rand() % tamano;
-    
-    // Copiar los elementos antes del punto de corte del padre1 al hijo
-    for (int i = 0; i <= puntoCorte; ++i) {
-        hijo[i] = new Nodo(padre1[i]->coordenadas.first, padre1[i]->coordenadas.second);
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+    int tamanoRuta = padre1.size();
+    std::vector<Nodo*> hijo(tamanoRuta, nullptr);
+
+    int puntoCorte1 = std::rand() % tamanoRuta;
+    int puntoCorte2 = (puntoCorte1 + (tamanoRuta / 2)) % tamanoRuta;
+
+    if (puntoCorte1 > puntoCorte2) {
+        std::swap(puntoCorte1, puntoCorte2);
     }
-    
-    // Crear un conjunto para rastrear los nodos ya presentes en el hijo
-    std::unordered_set<Nodo*> nodosEnHijo(hijo.begin(), hijo.end());
-    
-    // Rellenar el resto de los elementos del hijo con los elementos del padre2
-    int padre2Index = 0;
-    for (int i = 0; i < tamano; ++i) {
-        // Si el nodo ya está en el hijo, pasa al siguiente nodo en el padre2
-        while (nodosEnHijo.count(padre2[padre2Index])) {
-            padre2Index++;
+
+    // Copia la sección entre los puntos de corte del padre 1 al hijo
+    for (int i = puntoCorte1; i <= puntoCorte2; i++) {
+        hijo[i] = padre1[i];
+    }
+
+    // Copia los elementos del padre 2 al hijo en el orden en que aparecen,
+    // omitiendo aquellos que ya están en el hijo
+    int indexPadre2 = 0;
+    for (int i = 0; i < tamanoRuta; i++) {
+        if (hijo[i] == nullptr) {
+            while (std::find(hijo.begin(), hijo.end(), padre2[indexPadre2]) != hijo.end()) {
+                indexPadre2 = (indexPadre2 + 1) % tamanoRuta;
+            }
+            hijo[i] = padre2[indexPadre2];
         }
-        hijo[i] = new Nodo(padre2[padre2Index]->coordenadas.first, padre2[padre2Index]->coordenadas.second);
-        nodosEnHijo.insert(hijo[i]); // Agrega el nodo al conjunto
-        padre2Index++;
     }
-    
+
     return hijo;
 }
 
@@ -44,67 +47,116 @@ void AlgoritmoGenetico::inicializarPoblacion(const std::vector<Nodo*>& nodos) {
     }
 }
 
-double AlgoritmoGenetico::calcularDistanciaTotal(const std::vector<Nodo*>& ruta) {
-    double distanciaTotal = 0;
+double distanciaEntreNodos(const Nodo* nodo1, const Nodo* nodo2) {
+    // Obtiene las coordenadas de ambos nodos
+    int x1 = nodo1->coordenadas.first;
+    int y1 = nodo1->coordenadas.second;
+    int x2 = nodo2->coordenadas.first;
+    int y2 = nodo2->coordenadas.second;
 
-    for (size_t i = 0; i < ruta.size() - 1; ++i) {
-        distanciaTotal += grafo->calcularDistancia(*ruta[i], *ruta[i + 1]);
+    // Calcula la distancia euclidiana entre los dos puntos
+    double distancia = std::sqrt(std::pow(x2 - x1, 2) + std::pow(y2 - y1, 2));
+    return distancia;
+}
+
+double calcularDistanciaTotal(const std::vector<Nodo*>& ruta) {
+    double distanciaTotal = 0.0;
+    
+    for (size_t i = 0; i < ruta.size() - 1; i++) {
+        distanciaTotal += distanciaEntreNodos(ruta[i], ruta[i + 1]);
+    }
+    
+    return distanciaTotal;
+}
+
+void imprimirNodos(const std::vector<Nodo*>& nodos) {
+    for (const Nodo* nodo : nodos) {
+        std::cout << "(" << nodo->coordenadas.first << ", " << nodo->coordenadas.second << "), ";
+    }
+    std::cout << std::endl;
+}
+
+void mutarPeorIndividuo(std::vector<Nodo*>& individuo) {
+    int tamanoRuta = individuo.size();
+    
+    if (tamanoRuta < 2) {
+        return; // No se puede realizar un swap con menos de dos nodos
     }
 
-    // Agregar la distancia de regreso al nodo inicial
-    distanciaTotal += grafo->calcularDistancia(*ruta.back(), *ruta.front());
+    // Elegir dos índices diferentes aleatoriamente
+    int indice1 = std::rand() % tamanoRuta;
+    int indice2 = std::rand() % tamanoRuta;
+    
+    while (indice1 == indice2) {
+        indice2 = std::rand() % tamanoRuta;
+    }
 
-    return distanciaTotal;
+    // Realizar el swap entre los nodos en los índices seleccionados
+    std::swap(individuo[indice1], individuo[indice2]);
+}
+
+// Llamada a la mutación en el peor individuo de la generación
+void mutarPeorIndividuoDeGeneracion(std::vector<std::vector<Nodo*>>& generacion) {
+    double peorDistancia = calcularDistanciaTotal(generacion[0]);
+    int indicePeor = 0;
+
+    // Encontrar el peor individuo en términos de distancia
+    for (size_t i = 1; i < generacion.size(); i++) {
+        double distancia = calcularDistanciaTotal(generacion[i]);
+        if (distancia > peorDistancia) {
+            peorDistancia = distancia;
+            indicePeor = i;
+        }
+    }
+
+    // Realizar la mutación en el peor individuo
+    mutarPeorIndividuo(generacion[indicePeor]);
 }
 
 std::vector<std::vector<Nodo*>> AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
     std::vector<std::vector<Nodo*>> mejoresIndividuos;
-    for (int generacion = 0; generacion < generaciones; ++generacion) {
-        // Calcular la aptitud de cada individuo
-        std::vector<std::pair<int, double>> aptitudes; // Parejas (índice de individuo, valor de aptitud)
+    for (int generacion = 0; generacion < generaciones; generacion++) {
+        printf("Generación %d:\n", generacion);
+
         double sumaDistancias = 0.0;
+        std::vector<std::pair<int, double>> aptitudes; // Parejas (sujeto, distancia)
 
         for (int i = 0; i < individuos; ++i) {
-            int distancia = calcularDistanciaTotal(poblacion[i]);
+            double distancia = calcularDistanciaTotal(poblacion[i]);
             aptitudes.push_back(std::make_pair(i, distancia));
             sumaDistancias += distancia;
+            //printf("Distancia de individuo %d: %f\n", i, distancia);
         }
 
         // Calcular el promedio de las distancias de esta generación
         double mediaDistancias = sumaDistancias / individuos;
+        printf("Promedio: %f\n", mediaDistancias);
 
-        // Imprimir el promedio de distancias de esta generación
-        std::cout << std::endl << "Promedio de distancias en la generación " << generacion << ": " << mediaDistancias << std::endl;
-
-        
-
-        // Seleccionar individuos para la siguiente generación mediante selección por ranking
-        std::vector<std::vector<Nodo*>> nuevaGeneracion;
-
+        // Ordenar de mejor a no tan mejor
         std::sort(aptitudes.begin(), aptitudes.end(), [](const auto& a, const auto& b) {
             return a.second < b.second; // Ordenar por distancia ascendente
         });
 
-        int individuosFaltantes = individuos - nuevaGeneracion.size();
-        mejoresIndividuos.push_back(poblacion[aptitudes[0].first]);
+        std::vector<std::vector<Nodo*>> nuevaGeneracion;
+        nuevaGeneracion.reserve(individuos); // Reservar espacio para la nueva generación
 
-        for (int i = 0; i < individuosFaltantes; ++i) {
+        for (int i = 0; i < individuos; i++) {
             double valorEsperado = aptitudes[i].second / mediaDistancias;
             int copias = static_cast<int>(std::round(valorEsperado));
 
-            for (int j = 0; j < copias; ++j) {
+            for (int j = 0; j < copias; j++) {
                 nuevaGeneracion.push_back(poblacion[aptitudes[i].first]); // Agregar copias de los individuos
             }
         }
 
-        // Copiar el mejor individuo de la generación anterior si es necesario
-        while (nuevaGeneracion.size() < individuos) {
-            nuevaGeneracion.push_back(poblacion[aptitudes.back().first]);
+        // Comprobar si se generaron suficientes sujetos
+        if (nuevaGeneracion.size() < individuos) {
+            perror("NO SE HAN GENERADO SUFICIENTES SUJETOS\n");
+            break;
         }
 
         // Realizar crossover ordenado entre parejas de individuos
         std::vector<std::vector<Nodo*>> descendencia;
-        std::cout << "Individuos: " << nuevaGeneracion.size() << std::endl;
         for (int i = 0; i < individuos - 1; i += 2) {
             std::vector<Nodo*> hijo1 = orderedCrossover(nuevaGeneracion[i], nuevaGeneracion[i + 1]);
             std::vector<Nodo*> hijo2 = orderedCrossover(nuevaGeneracion[i + 1], nuevaGeneracion[i]);
@@ -112,14 +164,34 @@ std::vector<std::vector<Nodo*>> AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
             descendencia.push_back(hijo2);
         }
 
-        // Imprimir el camino total de cada individuo
-        for (int i = 0; i < individuos; ++i) {
-            int distanciaTotal = calcularDistanciaTotal(descendencia[i]);
-            std::cout << "Camino total del individuo " << i << ": " << distanciaTotal << std::endl;
+        // Mutar al peor individuo de la generación
+        mutarPeorIndividuoDeGeneracion(descendencia);
+
+        // Evaluar y mantener un registro de los mejores individuos en la nueva generación
+        double mejorDistancia = calcularDistanciaTotal(descendencia[0]);
+        std::vector<Nodo*> mejorIndividuo = descendencia[0];
+
+        for (int i = 1; i < individuos; i++) {
+            double distancia = calcularDistanciaTotal(descendencia[i]);
+            if (distancia < mejorDistancia) {
+                mejorDistancia = distancia;
+                mejorIndividuo = descendencia[i];
+            }
         }
 
-        // Reemplazar la población actual con la nueva generación y aplicar mutación si es necesario
-        poblacion = descendencia;
+        // Realizar la selección elitista para conservar una parte de los mejores individuos
+        std::sort(poblacion.begin(), poblacion.end(), [this](const std::vector<Nodo*>& a, const std::vector<Nodo*>& b) {
+            return calcularDistanciaTotal(a) < calcularDistanciaTotal(b);
+        });
+
+        for (int i = 0; i < poblacion.size(); i++) {
+            if (i < descendencia.size()) {
+                poblacion[i] = descendencia[i];
+            }
+        }
+
+        mejoresIndividuos.push_back(mejorIndividuo);
     }
+
     return mejoresIndividuos;
 }
