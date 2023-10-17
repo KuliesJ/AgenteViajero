@@ -66,6 +66,8 @@ double calcularDistanciaTotal(const std::vector<Nodo*>& ruta) {
         distanciaTotal += distanciaEntreNodos(ruta[i], ruta[i + 1]);
     }
     
+    distanciaTotal += distanciaEntreNodos(ruta[ruta.size()-1],ruta[0]);
+
     return distanciaTotal;
 }
 
@@ -147,12 +149,6 @@ std::vector<std::vector<Nodo*>> AlgoritmoGenetico::ejecutarAlgoritmoGenetico() {
             for (int j = 0; j < copias; j++) {
                 nuevaGeneracion.push_back(poblacion[aptitudes[i].first]); // Agregar copias de los individuos
             }
-        }
-
-        // Comprobar si se generaron suficientes sujetos
-        if (nuevaGeneracion.size() < individuos) {
-            perror("NO SE HAN GENERADO SUFICIENTES SUJETOS\n");
-            break;
         }
 
         // Realizar crossover ordenado entre parejas de individuos

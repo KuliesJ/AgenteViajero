@@ -19,9 +19,8 @@ int main() {
     srand(static_cast<unsigned>(time(nullptr)));
     // Genera puntos en el mapa
     for(int i=0;i<datos[0];i++){
-        int xAleatorio = 1 + rand() % 198;
-        int yAleatorio = 1 + rand() % 198;
-        xAleatorio -= 99; yAleatorio -= 99;
+        int xAleatorio = 10 + rand() % 480;
+        int yAleatorio = 10 + rand() % 480;
         ptrNodo = new Nodo(xAleatorio, yAleatorio);
         grafo.agregarNodo(ptrNodo);
         printf("Coords %d: (%d,%d)\n", i, xAleatorio, yAleatorio);
@@ -33,8 +32,6 @@ int main() {
     // Ejecutar el algoritmo genético
     std::vector<std::vector<Nodo*>> resultados = algoritmoGenetico.ejecutarAlgoritmoGenetico();
     
-    OpenGLRenderer renderer(resultados);
-    renderer.initialize();
+    OpenGLRenderer renderer(resultados,500,500);
     renderer.run();
-    
 }
